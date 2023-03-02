@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -20,6 +21,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
     private lateinit var mapFragment: SupportMapFragment
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private val REQUEST_CODE = 200
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,29 +41,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                44
+                REQUEST_CODE
             )
         }
-
-
-
-
     }
 
     @SuppressLint("MissingPermission")
     private fun currentLocation() {
-       val client = LocationServices.getFusedLocationProviderClient(this)
-        val task = client.lastLocation
-        task.addOnSuccessListener { location ->
-            if (location != null){
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+            if (location != null) {
                 mapFragment.getMapAsync { googlemap ->
-                    val latlng = LatLng(location.latitude,location.longitude)
-                    googlemap.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 15f))
+                    val latlng = LatLng(location.latitude, location.longitude)
+                    googlemap.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 12f))
                     googlemap.addMarker(MarkerOptions().position(latlng).title("You are Here"))
                 }
             }
         }
-
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -72,10 +69,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-        if (requestCode == 44){
+        if (requestCode == REQUEST_CODE) {
             currentLocation()
-        }else{
-            Toast.makeText(this,"Please enable the location", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "Please enable the location", Toast.LENGTH_SHORT).show()
         }
     }
 
