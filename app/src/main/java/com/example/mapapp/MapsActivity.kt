@@ -43,7 +43,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         /**
          * Add the data to a list
          */
-
         if (locationlist.isEmpty()) {
             locationlist.add(data1)
             locationlist.add(data2)
@@ -58,7 +57,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            mapFragment.getMapAsync(this)
+
         } else {
             ActivityCompat.requestPermissions(
                 this,
@@ -66,12 +65,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 REQUEST_CODE
             )
         }
+        mapFragment.getMapAsync(this)
     }
 
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-
         val customMarker: View =
             (getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater).inflate(
                 R.layout.custom_marker,
@@ -79,15 +78,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             )
         val numTxt = customMarker.findViewById<View>(R.id.tvProgress) as TextView
 
-        for (element in locationlist) {
-            numTxt.text = element.siteId.toString()
-            val marker: Marker = mMap.addMarker(
+        for (i in 0 until locationlist.size) {
+            numTxt.text = locationlist[i].siteId.toString()
+            mMap.addMarker(
                 MarkerOptions()
-                    .position(LatLng(element.lat, element.long))
-                    .title(element.siteName)
+                    .position(LatLng(locationlist[i].lat, locationlist[i].long))
+                    .title(locationlist[i].siteName)
                     .icon(BitmapDescriptorFactory.fromBitmap(createDrawableFromView(customMarker)))
             )
-            marker.showInfoWindow()
         }
 
         //To show the first item in list , move the camera towards it.
@@ -96,7 +94,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 LatLng(
                     locationlist[0].lat,
                     locationlist[0].long
-                ), 12f
+                ), 11f
             )
         )
 
@@ -130,7 +128,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         grantResults: IntArray
     ) {
         if (requestCode == REQUEST_CODE) {
-            mapFragment.getMapAsync(this)
+
         } else {
             Toast.makeText(this, "Please enable the location", Toast.LENGTH_SHORT).show()
         }

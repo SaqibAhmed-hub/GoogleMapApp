@@ -3,15 +3,15 @@ package com.example.mapapp.model
 data class SiteLocation(
     val lat: Double,
     val long: Double,
-    val siteId: Int = 0,
+    val siteId: Int,
     val siteName: String
 )
 
 
 object SiteData{
     val data1 = SiteLocation(
-        lat = 13.87,
-        long = 83.95,
+        lat = 13.87256,
+        long = 83.955263,
         siteId = 156,
         siteName = "Site1"
     )
