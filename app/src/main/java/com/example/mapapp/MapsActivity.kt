@@ -38,11 +38,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private val geofencePendingIntent: PendingIntent by lazy {
         val intent = Intent(this, GeofenceBroadcastReceiver::class.java)
-        PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        PendingIntent.getBroadcast(
+            this,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+        )
     }
 
-    private val REQUEST_CODE = 200
-    private val REQUEST_CHECK_SETTINGS = 101
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -87,8 +90,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun createLocationRequest() {
         val locationRequest = LocationRequest.create().apply {
-            interval = 10000
-            fastestInterval = 5000
+            interval = LOCATION_INTERVAL
+            fastestInterval = LOCATION_FASTEST_INTERVAL
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
 
@@ -106,12 +109,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         task.addOnFailureListener { exception ->
             Log.i("Location", exception.message.toString())
             if (exception is ResolvableApiException) {
-                // Location settings are not satisfied, but this can be fixed
-                // by showing the user a dialog.
                 try {
-                    // Show the dialog by calling startResolutionForResult(),
-                    // and check the result in onActivityResult().
-
                     exception.startResolutionForResult(
                         this,
                         REQUEST_CHECK_SETTINGS
@@ -135,7 +133,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             geofenceList.add(
                 Geofence.Builder()
                     .setRequestId("entry.key")
-                    .setCircularRegion(latLng.latitude, latLng.longitude, 20f)
+                    .setCircularRegion(latLng.latitude, latLng.longitude, RADIUS)
                     .setExpirationDuration(Geofence.NEVER_EXPIRE)
                     .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT)
                     .build()
@@ -149,7 +147,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val circleOptions = CircleOptions()
             .center(latLng)
-            .radius(20.0)
+            .radius(RADIUS.toDouble())
             .fillColor(0x40ff0000)
             .strokeColor(Color.BLUE)
             .strokeWidth(2f)
@@ -189,7 +187,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         grantResults: IntArray
     ) {
         if (requestCode == REQUEST_CODE) {
-            if (grantResults.isNotEmpty() && (grantResults[0] == PackageManager.PERMISSION_GRANTED)){
+            if (grantResults.isNotEmpty() && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                 currentLocation()
             }
         } else {
@@ -228,6 +226,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 Toast.makeText(this@MapsActivity, it.message, Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    companion object {
+        const val RADIUS = 20f
+        const val REQUEST_CODE = 200
+        const val REQUEST_CHECK_SETTINGS = 101
+        const val LOCATION_INTERVAL = 10000L
+        const val LOCATION_FASTEST_INTERVAL = 5000L
     }
 
 

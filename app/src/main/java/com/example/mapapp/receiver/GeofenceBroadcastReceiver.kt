@@ -35,24 +35,26 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
             return
         }
         // Get the transition type.
-        val geofenceTransition = geofencingEvent.geofenceTransition
+        when (geofencingEvent.geofenceTransition) {
 
-        if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
+            Geofence.GEOFENCE_TRANSITION_ENTER -> {
+                sendNotification(context!!,"Enterance")
+            }
 
-            val triggeringGeofences = geofencingEvent.triggeringGeofences
-            sendNotification(context!!)
-            Log.i(TAG, triggeringGeofences.toString())
-        } else {
-            // Log the error.
-            Log.e(TAG, "Error")
+            Geofence.GEOFENCE_TRANSITION_DWELL -> {
+                sendNotification(context!!,"Dwell")
+            }
+
+            Geofence.GEOFENCE_TRANSITION_EXIT -> {
+                sendNotification(context!!, "Exit")
+            }
+            else -> {
+                Log.e(TAG, "Error in setting up the geofence")
+            }
         }
-
-
     }
 
-    private fun sendNotification(
-        context: Context
-    ) {
+    private fun sendNotification(context: Context, type: String) {
 
         val notificationManager =
             getSystemService(context, NotificationManager::class.java) as NotificationManager
@@ -61,13 +63,14 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
             val mChannel =
-                NotificationChannel(CHANNEL_ID, "Channel1", notificationManager.importance)
+                NotificationChannel(CHANNEL_ID, "Channel1", NotificationManager.IMPORTANCE_HIGH)
             mChannel.enableLights(true)
             mChannel.lightColor = Color.GREEN
             mChannel.enableVibration(false)
             notificationManager.createNotificationChannel(mChannel)
 
         }
+
         /*
         * Intent to send in the Notification
         *
@@ -83,17 +86,15 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
 
         /*
-        *
         * Notification Builder
         * */
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setContentTitle("GeoFence App")
-            .setContentText("You have entered the geofence area")
+            .setContentText("You have $type the geofence area")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setAutoCancel(true)
             .setDefaults(Notification.DEFAULT_ALL)
-            .setVibrate(longArrayOf(1000, 1000, 1000, 1000, 1000))
             .setLights(ContextCompat.getColor(context, R.color.purple_200), 50, 10)
             .setContentIntent(pendingIntent)
             .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
